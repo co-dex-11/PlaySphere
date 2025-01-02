@@ -423,7 +423,7 @@ document.getElementById('register').addEventListener('submit', function(e) {
     <div id="contactOverlay" class="overlay">
         <div class="overlay-content">
             <h2>Contact Us</h2>
-            <p style="font-size: 16px;">We'd love to hear from you! Reach out to us for any inquiries or support. <br>
+            <p style="font-size: 16px;">We'd love to hear from you! Reach out to us for any inquiries or support ^^/. <br>
             &copy; 2025 PlaySphere | Designed by team <a href="mailto:co.dex11@hotmail.com?subject=Website%20Inquiry&body=I%20would%20like%20to%20learn%20more%20about..." target="_blank" style="z-index: -1;" style="text-decoration: underline; color: #bbd12b;" >CodeX11</a></p>
             <form action="contact.php" method="post" class="contact-form">
                 <label for="contact-name">Name</label>

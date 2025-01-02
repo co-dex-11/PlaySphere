@@ -336,7 +336,7 @@ try {
             </div>
             <div class="form-field">
             <label for="phone_number">Phone Number:</label>
-            <input type="text" id="phone_number" name="phone_number" placeholder="07X XXX XXXX" required>
+            <input type="number" id="phone_number" name="phone_number" placeholder="07X XXX XXXX" min="0711111111" max="0799999999" required>
             </div>
         </div>
 
@@ -370,7 +370,7 @@ try {
 document.querySelectorAll('.toggle-link').forEach(link => {
     link.addEventListener('click', (event) => {
         event.preventDefault();
-s
+
         document.querySelectorAll('.form-content').forEach(form => {
             form.classList.remove('active');
         });
@@ -380,6 +380,39 @@ s
     });
 });
 </script>
+<script>
+document.getElementById('register').addEventListener('submit', function(e) {
+    // Get password and confirm password values
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        alert("Passwords do not match. Please ensure both passwords are the same.");
+        e.preventDefault(); // Prevent form submission
+        return false;
+    }
+
+    // Check password length and strength (example criteria)
+    if (password.length < 8) {
+        alert("Password must be at least 8 characters long.");
+        e.preventDefault(); // Prevent form submission
+        return false;
+    }
+
+    // Example of additional password strength validation (optional)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        alert("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+        e.preventDefault(); // Prevent form submission
+        return false;
+    }
+
+    // If everything is valid, the form will submit
+    return true;
+});
+</script>
+
 
 <!-- Floating Button -->
     <button id="contactUsBtn" class="floating-btn">

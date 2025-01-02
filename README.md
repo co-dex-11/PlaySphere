@@ -3,6 +3,19 @@
 Welcome to the PlaySphere setup guide! This document will help you through the steps to set up and configure PlaySphere on your local machine.
 
 ---
+## 🔑 Admin Configuration
+
+To configure your **PlaySphere** admin, set the **username** and **password**. Please ensure that the password is **strong** and kept **secure**.
+
+### Admin Credentials
+
+- **Admin Username:** `playsphere`  
+- **Admin Password:** `@Admin123`  
+
+> 💡 **Note:**  
+> Replace `playsphere` and `Admin123` with your actual values. Be sure to **store these securely**!
+
+---
 
 ## 🛠️ Prerequisites
 

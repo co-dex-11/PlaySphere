@@ -504,7 +504,7 @@ $futsals = $futsalsStmt->fetchAll(PDO::FETCH_ASSOC);
     <td data-label="Payment Status" class="payment-<?= htmlspecialchars(strtolower($booking['payment_status'])) ?>">
         <?= htmlspecialchars($booking['payment_status']) ?>
     </td>
-    <td data-label="Total Cost">$<?= htmlspecialchars(number_format($booking['total_cost'], 2)) ?></td>
+    <td data-label="Total Cost">Rs. <?= htmlspecialchars(number_format($booking['total_cost'], 2)) ?></td>
 </tr>
 
                 <?php endforeach; ?>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jan 02, 2025 at 03:33 PM
+-- Generation Time: Jan 06, 2025 at 08:54 AM
 -- Server version: 8.3.0
 -- PHP Version: 8.2.18
 
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   PRIMARY KEY (`id`),
   KEY `futsal_id` (`futsal_id`),
   KEY `customer_id` (`customer_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS `futsals` (
 --
 
 INSERT INTO `futsals` (`id`, `owner_id`, `name`, `location`, `price_per_hour`, `description`, `image`, `created_at`) VALUES
-(28, 63, 'Moques', 'Hikkaduwa, Galle', 1400.00, '0753357777', 'uploads/futsals/1735832006_INTRO-1280X720.jpg', '2025-01-02 15:33:26'),
-(27, 63, 'Moques', 'Colombo 3, Colombo', 1500.00, '0753357777', 'uploads/futsals/1735831967_2018-10-03.jpg', '2025-01-02 15:32:47'),
-(26, 63, 'Moques', 'Kalmunai, Ampara', 1200.00, '0753357777', 'uploads/futsals/1735831916_2022-09-21.jpg', '2025-01-02 15:31:56');
+(28, 63, 'Moques 1', 'Hikkaduwa, Galle', 1400.00, '0753357777', 'uploads/futsals/1735832006_INTRO-1280X720.jpg', '2025-01-02 15:33:26'),
+(27, 63, 'Moques 2', 'Colombo 3, Colombo', 1500.00, '0753357777', 'uploads/futsals/1735831967_2018-10-03.jpg', '2025-01-02 15:32:47'),
+(26, 63, 'Moques 3', 'Kalmunai, Ampara', 1200.00, '0753357777', 'uploads/futsals/1735831916_2022-09-21.jpg', '2025-01-02 15:31:56');
 
 -- --------------------------------------------------------
 
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=MyISAM AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
@@ -100,8 +100,9 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `password_hash`, `nic`, `phone_number`, `role`, `created_at`) VALUES
 (63, 'Futsal Servior', 'servior', 'servior@gmail.com', '$2y$10$Y9fArYffUl03FvHjwDbW5uU7UrWHHnfuC4QwqZX9lSm3/tqwQYg82', NULL, '0753357777', 'staff', '2025-01-02 08:01:20'),
-(64, 'محمد ميران', 'maiz.an', 'mohamedmaizanmunas@gmail.com', '$2y$10$14EUB0gc4I9EsoEDZ.dfBuWi.gBWfSoyuliuz4AAYO5070MzXPAHm', NULL, '753357777', 'customer', '2025-01-02 09:16:33'),
-(62, 'PlaySphere', 'playsphere', 'admin@playsphere.com', '$2y$10$gBqHo1bFpYX/JOO/72tf6u5ehHJccr8jf5lGpLXcksWESaMzJeXDm', NULL, '94753357777', 'admin', '2025-01-01 19:43:53');
+(64, 'محمد ميران', 'maiz.an', 'mohamedmaizanmunas@gmail.com', '$2y$10$zvhhSchoj6HbPVvAtyTbKu9ozyMwSOnWX.ngUVWsA3OBj.aSaopbS', NULL, '753357777', 'customer', '2025-01-02 09:16:33'),
+(62, 'PlaySphere', 'playsphere', 'admin@playsphere.com', '$2y$10$gBqHo1bFpYX/JOO/72tf6u5ehHJccr8jf5lGpLXcksWESaMzJeXDm', NULL, '94753357777', 'admin', '2025-01-01 19:43:53'),
+(0, 'unregistered', 'unreg', '', '', NULL, '', 'customer', '2025-01-02 03:46:33');
 
 DELIMITER $$
 --
@@ -119,19 +120,20 @@ CREATE DEFINER=`root`@`localhost` EVENT `auto_cancel_bookings` ON SCHEDULE EVERY
       );
 END$$
 
-DROP EVENT IF EXISTS `update_booking_status`$$
-CREATE DEFINER=`root`@`localhost` EVENT `update_booking_status` ON SCHEDULE EVERY 5 SECOND STARTS '2025-01-02 18:15:16' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
-    UPDATE bookings
-    SET status = 'completed'
-    WHERE end_time < NOW() AND status = 'confirmed';
-END$$
-
 DROP EVENT IF EXISTS `UpdatePlayingStatus`$$
 CREATE DEFINER=`root`@`localhost` EVENT `UpdatePlayingStatus` ON SCHEDULE EVERY 5 SECOND STARTS '2025-01-02 18:57:41' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
+    -- Update status to 'playing' if the current time is the same as or past the start_time but before the end_time
     UPDATE bookings
     SET status = 'playing'
-    WHERE NOW() BETWEEN start_time AND end_time
+    WHERE NOW() >= start_time
+      AND NOW() < end_time
       AND status = 'confirmed';
+
+    -- Update status to 'completed' if the current time is past the end_time
+    UPDATE bookings
+    SET status = 'completed'
+    WHERE NOW() >= end_time
+      AND (status = 'confirmed' OR status = 'playing');
 END$$
 
 DELIMITER ;

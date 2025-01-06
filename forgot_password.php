@@ -1,35 +1,105 @@
 <?php
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "PlaySphere";
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer-master/src/Exception.php';
+require 'PHPMailer-master/src/PHPMailer.php';
+require 'PHPMailer-master/src/SMTP.php';
+
 // Create connection
 $conn = mysqli_connect($servername, $username, $password, $dbname);
-
-// Check connection
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle OTP generation and sending
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_otp'])) {
     $usernameOrEmail = $_POST['usernameOrEmail'];
+    
+    // Check if the email or username exists in the database
+    $sql = "SELECT email FROM users WHERE username='$usernameOrEmail' OR email='$usernameOrEmail'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+        // Generate OTP
+        $otp = rand(100000, 999999);
+        $_SESSION['otp'] = $otp;
+        $_SESSION['usernameOrEmail'] = $usernameOrEmail;
+        $_SESSION['otp_time'] = time();
+        
+        // Fetch email from database
+        $row = mysqli_fetch_assoc($result);
+        $email = $row['email'];
+
+        // Send OTP via email using PHPMailer
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'mohammedmaizan@gmail.com';
+            $mail->Password = 'ocbocejxyxquwxic';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            $mail->setFrom('mohammedmaizan@gmail.com', 'PlaySphere');
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = "Your OTP Code";
+            $mail->Body = "<p>Your OTP code for resetting your password is: <strong>{$otp}</strong></p>";
+
+            $mail->send();
+            echo "<script>alert('OTP has been sent to your email.'); window.location.href = 'forgot_password.php?step=verify';</script>";
+        } catch (Exception $e) {
+            echo "<script>alert('Failed to send OTP. Please try again.'); window.location.href = 'forgot_password.php';</script>";
+        }
+    } else {
+        echo "<script>alert('No account found with that username or email.'); window.location.href = 'forgot_password.php';</script>";
+    }
+    exit();
+}
+
+// Handle OTP verification
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
+    $entered_otp = $_POST['otp'];
+
+    // Check if OTP is valid
+    if (isset($_SESSION['otp']) && $_SESSION['otp'] == $entered_otp) {
+        echo "<script>alert('OTP verified successfully. Please reset your password.'); window.location.href = 'forgot_password.php?step=reset';</script>";
+    } else {
+        echo "<script>alert('Invalid OTP. Please try again.'); window.location.href = 'forgot_password.php?step=verify';</script>";
+    }
+    exit();
+}
+
+// Handle password reset
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
     $newPassword = $_POST['newPassword'];
     $confirmPassword = $_POST['confirmPassword'];
 
     if ($newPassword !== $confirmPassword) {
-        echo "<script>alert('Passwords do not match.'); window.location.href = 'forgot_password.php';</script>";
+        echo "<script>alert('Passwords do not match.'); window.location.href = 'forgot_password.php?step=reset';</script>";
         exit();
     }
 
+    // Hash the new password
     $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
+    // Update the password in the database
+    $usernameOrEmail = $_SESSION['usernameOrEmail'];
     $sql = "UPDATE users SET password_hash='$hashedPassword' WHERE username='$usernameOrEmail' OR email='$usernameOrEmail'";
     if (mysqli_query($conn, $sql)) {
         echo "<script>alert('Password reset successful!'); window.location.href = 'index.php#login-section';</script>";
     } else {
-        echo "<script>alert('Error updating password: " . mysqli_error($conn) . "'); window.location.href = 'forgot_password.php';</script>";
+        echo "<script>alert('Error updating password.'); window.location.href = 'forgot_password.php?step=reset';</script>";
     }
+    exit();
 }
 
 mysqli_close($conn);
@@ -37,11 +107,9 @@ mysqli_close($conn);
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="images/fav.png">
     <title>Forgot Password - PlaySphere</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="Styles/index.css" rel="stylesheet">
@@ -137,53 +205,41 @@ mysqli_close($conn);
             color: #a3c61f;
         }
     </style>
-    <script>
-        function validateForm() {
-            var usernameOrEmail = document.getElementById('usernameOrEmail').value;
-            var newPassword = document.getElementById('newPassword').value;
-            var confirmPassword = document.getElementById('confirmPassword').value;
 
-            if (usernameOrEmail.trim() === "") {
-                alert("Username or Email must be filled out");
-                return false;
-            }
-
-            if (newPassword.trim() === "") {
-                alert("New Password must be filled out");
-                return false;
-            }
-
-            if (newPassword.length < 6) {
-                alert("Password must be at least 6 characters long");
-                return false;
-            }
-
-            if (newPassword !== confirmPassword) {
-                alert("Passwords do not match");
-                return false;
-            }
-
-            return true;
-        }
-    </script>
 </head>
-
 <body>
     <div class="form-container">
         <div class="forgot-password-form">
-            <h2>Forgot Password</h2>
-            <form action="forgot_password.php" method="post" onsubmit="return validateForm()">
-                <label for="usernameOrEmail">Username or Email:</label>
-                <input type="text" id="usernameOrEmail" name="usernameOrEmail" placeholder="Enter your username or email" required><br>
-                <label for="newPassword">New Password:</label>
-                <input type="password" id="newPassword" name="newPassword" placeholder="Enter your new password" required><br>
-                <label for="confirmPassword">Confirm New Password:</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your new password" required><br>
-                <button type="submit" class="btn-sub">Reset Password</button>
-            </form>
-            <p>Remembered your password? <a href="index.php#login-section">Login here</a></p>
+            <?php if (!isset($_GET['step']) || $_GET['step'] === 'request'): ?>
+                <!-- Step 1: Enter Username or Email -->
+                <h2>Forgot Password</h2>
+                <form action="forgot_password.php" method="post">
+                    <label for="usernameOrEmail">Username or Email:</label>
+                    <input type="text" id="usernameOrEmail" name="usernameOrEmail" placeholder="Enter your username or email" required><br>
+                    <button type="submit" name="send_otp" class="btn-sub">Send OTP</button>
+                </form>
+
+            <?php elseif ($_GET['step'] === 'verify'): ?>
+                <!-- Step 2: OTP Verification -->
+                <h2>Verify OTP</h2>
+                <form action="forgot_password.php" method="post">
+                    <label for="otp">Enter OTP:</label>
+                    <input type="text" id="otp" name="otp" placeholder="Enter OTP sent to your email" required><br>
+                    <button type="submit" name="verify_otp" class="btn-sub">Verify OTP</button>
+                </form>
+
+            <?php elseif ($_GET['step'] === 'reset'): ?>
+                <!-- Step 3: Reset Password -->
+                <h2>Reset Password</h2>
+                <form action="forgot_password.php" method="post">
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" id="newPassword" name="newPassword" placeholder="Enter your new password" required><br>
+                    <label for="confirmPassword">Confirm New Password:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your new password" required><br>
+                    <button type="submit" name="reset_password" class="btn-sub">Reset Password</button>
+                </form>
+            <?php endif; ?>
         </div>
     </div>
 </body>
-
 </html>

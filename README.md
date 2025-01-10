@@ -55,7 +55,7 @@ openssl.cafile = "C:\wamp64\bin\php\cacert.pem"
 
 You can either use an **existing email account** or create a **new one** specifically for sending emails.
 
-#### 🔑 How to Create an App Password (for Gmail):
+## 🔑 How to Create an App Password (for Gmail):
 1. Go to [Google Account Security Settings](https://myaccount.google.com/security).
 2. Under **"Signing in to Google,"** enable **2-Step Verification** if not already enabled. 
     - 🔐 This step adds an extra layer of security to your account.

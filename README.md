@@ -32,7 +32,14 @@ Before getting started, make sure you have the following:
 ### 1. Extract the PlaySphere Files
 Unzip the PlaySphere files and place them in your local web server directory. For example, if you're using WAMP, place the files in `C:\wamp64\www\playSphere`.
 
-### 2. Configure `ini.php`
+### 2. Add cacert.pem to your PHP directory eg: C:\wamp64\bin\php (Directry the file on cacert directry)
+To ensure proper SSL verification, include the cacert.pem file in your PHP installation directory. For example:
+Place the cacert.pem file inside the php directory (e.g., C:\wamp64\bin\php).
+
+Your path should look like this:
+C:\wamp64\bin\php\cacert.pem
+
+### 3. Configure `ini.php`
 Open the `ini.php` file and set the following two directives for `curl` and `openssl` to ensure proper functionality:
 
 ```ini
@@ -50,6 +57,7 @@ curl.cainfo = "C:\wamp64\bin\php\cacert.pem"
 ; option.
 openssl.cafile = "C:\wamp64\bin\php\cacert.pem"
 ---
+
 ```
 ### 3. Set Up Your Email Configuration
 

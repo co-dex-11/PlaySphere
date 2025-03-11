@@ -21,8 +21,8 @@ try {
     $mail->addAddress('mohamedmaizanmunas@gmail.com');
 
     $mail->isHTML(true);
-    $mail->Subject = 'Test Email from WAMP Server';
-    $mail->Body    = 'This is a test email sent from WAMP using PHPMailer.';
+    $mail->Subject = 'Test Email from Xamp Server';
+    $mail->Body    = 'This is a test email sent from Xamp using PHPMailer.';
 
     $mail->send();
     echo 'Message has been sent';
